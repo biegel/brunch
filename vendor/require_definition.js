@@ -1,7 +1,13 @@
 (function(/*! Brunch !*/) {
   'use strict';
 
-  var globals = typeof window !== 'undefined' ? window : global;
+  // NB: due to conflicts with huffpost-web, we namespace brunch require
+  // to `window.Conversations`.  If not, all kinds of bugs appear in apps
+  // that use requireJS (since this is not a full version of require)
+  if ( !window.Conversations ) {
+    window.Conversations = {};
+  }
+  var globals = window.Conversations;
   if (typeof globals.require === 'function') return;
 
   var modules = {};
@@ -43,7 +49,10 @@
 
   var initModule = function(name, definition) {
     var module = {id: name, exports: {}};
-    definition(module.exports, localRequire(name), module);
+    // Our brunch definitions expect the first argument to be the
+    // global scope (usually `window`, but for Conversations, it is
+    // `window.Conversations`:
+    definition(globals, localRequire(name), module);
     var exports = cache[name] = module.exports;
     return exports;
   };
